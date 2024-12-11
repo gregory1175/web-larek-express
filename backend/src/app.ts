@@ -7,6 +7,7 @@ import router from './routes';
 import errorHandler from './middlewares/error-handler';
 import { errorLogger } from './middlewares/logger';
 import { PORT, DB_ADDRESS } from './config';
+import { NotFoundError } from './errors';
 
 dotenv.config();
 const app = express();
@@ -39,6 +40,9 @@ const startServer = async () => {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', router);
+app.use((_req, _res, next) => {
+  next(new NotFoundError('Ресурс не найден'));
+});
 app.use(errorLogger);
 app.use(errorHandler);
 

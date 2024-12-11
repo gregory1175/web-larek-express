@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
+import mongoose from 'mongoose';
+import ValidationError from '../errors/validation-error';
 import Product from '../models/product';
-import { BadRequestError, ConflictError } from '../errors';
+import { ConflictError } from '../errors';
 
 export const getProducts = async (
   _req: Request,
@@ -11,11 +13,6 @@ export const getProducts = async (
     const products = await Product.find({});
     return res.send({ items: products, total: products.length });
   } catch (error) {
-    if (error instanceof Error) {
-      return next(
-        new BadRequestError(`Ошибка при получении продуктов: ${error.message}`),
-      );
-    }
     return next(error);
   }
 };
@@ -53,6 +50,9 @@ export const createProduct = async (
       price: product.price,
     });
   } catch (error) {
+    if (error instanceof mongoose.Error.ValidationError) {
+      return ValidationError(error, next);
+    }
     return next(error);
   }
 };
